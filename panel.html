@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body {
+  background:#0b0b0b;
+  color:#eaeaea;
+  font-family: monospace;
+  margin:0;
+}
+section {
+  border-bottom:1px solid #222;
+  padding:8px;
+}
+textarea {
+  width:98%;
+  min-height:40px;
+  background:#111;
+  color:#9f9;
+  border:1px solid #333;
+  padding:6px;
+  resize:none;
+  overflow:hidden;
+}
+button {
+  background:#1a1a1a;
+  color:#9cf;
+  border:1px solid #333;
+  padding:5px 8px;
+  margin:4px 2px;
+  cursor:pointer;
+}
+button:hover { background:#222; }
+.badge {
+  display:inline-block;
+  background:#111;
+  border:1px solid #333;
+  padding:4px 6px;
+  margin:3px;
+  cursor:pointer;
+  color:#f88;
+}
+.badge:hover { background:#222; }
+.title {
+  color:#6cf;
+  font-weight:bold;
+  margin-bottom:4px;
+}
+</style>
+</head>
+
+<body>
+
+<section>
+  <div class="title">Payload Injection</div>
+  <textarea id="payload" placeholder="payload"></textarea>
+  <button id="injectBtn">Inject into URL</button>
+</section>
+
+<section>
+  <div class="title">URL Encode / Decode</div>
+  <textarea id="codec" placeholder="text to encode / decode"></textarea>
+  <button id="encBtn">Encode</button>
+  <button id="decBtn">Decode</button>
+</section>
+
+<section>
+  <div class="title">Bypass Characters (click to copy)</div>
+  <div id="bypass"></div>
+</section>
+
+<script src="panel.js"></script>
+</body>
+</html>

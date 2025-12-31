@@ -1,0 +1,7 @@
+{
+  "manifest_version": 3,
+  "name": "injector(DevTools)",
+  "version": "1.0",
+  "description": "Dark Hackbar inside DevTools for CTF & pentesting",
+  "devtools_page": "devtools.html"
+}
