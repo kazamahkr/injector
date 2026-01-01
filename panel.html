@@ -47,6 +47,69 @@ button:hover { background:#222; }
   font-weight:bold;
   margin-bottom:4px;
 }
+.payload {
+  color: #b6ffb6;   /* greenish white */
+}
+/* payload list layout */
+#payloadBox {
+  display: block;
+}
+
+#payloadBox .payload {
+  display: block;
+  width: fit-content;
+  max-width: 95%;
+  white-space: nowrap;
+}
+/* mode button colors */
+#modeBox .badge[data-mode="xss"] {
+  color: #ffb86c;          /* orange */
+  border-color: #ffb86c;
+}
+
+#modeBox .badge[data-mode="sqli"] {
+  color: #8be9fd;          /* cyan */
+  border-color: #8be9fd;
+}
+
+/* active hover */
+#modeBox .badge:hover {
+  background: #1f1f1f;
+}
+/* type button colors */
+#typeBox .badge {
+  color: #cfd8dc;        /* default */
+  border-color: #555;
+}
+
+/* XSS types */
+#typeBox .badge:nth-child(1) {  /* basic */
+  color: #a6e3a1;        /* green */
+  border-color: #a6e3a1;
+}
+
+#typeBox .badge:nth-child(2) {  /* blind */
+  color: #f9e2af;        /* yellow */
+  border-color: #f9e2af;
+}
+
+#typeBox .badge:nth-child(3) {  /* dom */
+  color: #fab387;        /* orange */
+  border-color: #fab387;
+}
+
+/* SQLi extra types (will auto-apply if exist) */
+#typeBox .badge:nth-child(4) {
+  color: #89b4fa;        /* blue */
+  border-color: #89b4fa;
+}
+
+#typeBox .badge:nth-child(5) {
+  color: #f38ba8;        /* red */
+  border-color: #f38ba8;
+}
+
+
 </style>
 </head>
 
@@ -69,6 +132,23 @@ button:hover { background:#222; }
   <div class="title">Bypass Characters (click to copy)</div>
   <div id="bypass"></div>
 </section>
+
+<section>
+  <div class="title">Payloads (click to copy)</div>
+
+  <!-- MODE -->
+  <div id="modeBox">
+    <span class="badge" data-mode="xss">XSS</span>
+    <span class="badge" data-mode="sqli">SQLi</span>
+  </div>
+
+  <!-- TYPE -->
+  <div id="typeBox" style="margin-top:6px;"></div>
+
+  <!-- PAYLOADS -->
+  <div id="payloadBox" style="margin-top:6px;"></div>
+</section>
+
 
 <script src="panel.js"></script>
 </body>
