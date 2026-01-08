@@ -24,25 +24,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (pairs[e.key]) {
       let s = payload.selectionStart, eEnd = payload.selectionEnd;
-      
+
       // Only wrap if there is an actual selection
       if (s !== eEnd) {
         e.preventDefault(); // Stop the character from being typed normally
-        
+
         const selectedText = payload.value.slice(s, eEnd);
         const wrapperOpen = e.key;
         const wrapperClose = pairs[e.key];
-        
-        const newValue = payload.value.slice(0, s) + 
-                         wrapperOpen + selectedText + wrapperClose + 
-                         payload.value.slice(eEnd);
-        
+
+        const newValue = payload.value.slice(0, s) +
+          wrapperOpen + selectedText + wrapperClose +
+          payload.value.slice(eEnd);
+
         payload.value = newValue;
 
         // Restore selection to include the new wrappers
         payload.selectionStart = s;
         payload.selectionEnd = eEnd + 2;
-        
+
         autoGrow(payload);
       }
     }
@@ -66,20 +66,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------- INJECT ---------- */
+  /* ---------- REFINED INJECT ---------- */
   injectBtn.onclick = () => {
-    const p = payload.value.trim();
+    let p = payload.value.trim();
     if (!p) return;
+
+    // If the user pasted an already encoded string, decode it first 
+    // to prevent double-encoding when searchParams.set runs.
+    try {
+      if (p.includes('%')) {
+        p = decodeURIComponent(p);
+      }
+    } catch (e) {
+      // If decoding fails, continue with original string
+    }
+
     chrome.devtools.inspectedWindow.eval(`
-      (function(){
-        const payload=${JSON.stringify(p)};
-        let u=new URL(location.href);
-        let k=[...u.searchParams.keys()];
-        if(k.length){
-          u.searchParams.set(k[0],payload);
-          location.href=u.toString();
-        }
-      })();
-    `);
+    (function(){
+      const payload = ${JSON.stringify(p)};
+      let u = new URL(location.href);
+      let k = [...u.searchParams.keys()];
+      
+      if(k.length){
+        u.searchParams.set(k[0], payload);
+        location.href = u.toString();
+      }
+    })();
+  `);
     copyText(p);
   };
 
@@ -227,3 +240,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (i === 0) renderTypes(m);
   });
 });
+
+
+
+
+
