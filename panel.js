@@ -10,6 +10,44 @@ document.addEventListener("DOMContentLoaded", () => {
   const typeBox = document.getElementById("typeBox");
   const payloadBox = document.getElementById("payloadBox");
 
+  /*this is special feature hacked from vs code  */
+  /* ---------- AUTO WRAP SELECTION ---------- */
+  payload.addEventListener("keydown", (e) => {
+    const pairs = {
+      "'": "'",
+      '"': '"',
+      '`': '`',
+      '(': ')',
+      '[': ']',
+      '{': '}'
+    };
+
+    if (pairs[e.key]) {
+      let s = payload.selectionStart, eEnd = payload.selectionEnd;
+      
+      // Only wrap if there is an actual selection
+      if (s !== eEnd) {
+        e.preventDefault(); // Stop the character from being typed normally
+        
+        const selectedText = payload.value.slice(s, eEnd);
+        const wrapperOpen = e.key;
+        const wrapperClose = pairs[e.key];
+        
+        const newValue = payload.value.slice(0, s) + 
+                         wrapperOpen + selectedText + wrapperClose + 
+                         payload.value.slice(eEnd);
+        
+        payload.value = newValue;
+
+        // Restore selection to include the new wrappers
+        payload.selectionStart = s;
+        payload.selectionEnd = eEnd + 2;
+        
+        autoGrow(payload);
+      }
+    }
+  });
+
   /* ---------- AUTO GROW ---------- */
   function autoGrow(el) {
     el.style.height = "auto";
