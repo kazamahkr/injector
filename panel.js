@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- INJECT ---------- */
   /* ---------- REFINED INJECT ---------- */
-/* ---------- REFINED INJECT ---------- */
+ /* ---------- REFINED INJECT ---------- */
 injectBtn.onclick = () => {
   let p = payload.value.trim();
   if (!p) return;
@@ -248,7 +248,6 @@ injectBtn.onclick = () => {
     if (i === 0) renderTypes(m);
   });
 });
-
 
 
 
