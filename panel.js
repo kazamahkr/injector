@@ -67,35 +67,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- INJECT ---------- */
   /* ---------- REFINED INJECT ---------- */
-  injectBtn.onclick = () => {
-    let p = payload.value.trim();
-    if (!p) return;
+/* ---------- REFINED INJECT ---------- */
+injectBtn.onclick = () => {
+  let p = payload.value.trim();
+  if (!p) return;
 
-    // If the user pasted an already encoded string, decode it first 
-    // to prevent double-encoding when searchParams.set runs.
-    try {
-      if (p.includes('%')) {
-        p = decodeURIComponent(p);
-      }
-    } catch (e) {
-      // If decoding fails, continue with original string
-    }
+  try {
+    if (p.includes('%')) p = decodeURIComponent(p);
+  } catch (e) {}
 
-    chrome.devtools.inspectedWindow.eval(`
+  chrome.devtools.inspectedWindow.eval(`
     (function(){
       const payload = ${JSON.stringify(p)};
       let u = new URL(location.href);
+      
+      // 1. Fragment Injection (#) Logic
+      // If the URL already has a fragment, or you want to force fragment injection:
+      if (location.hash || payload.startsWith('#')) {
+        location.hash = payload.startsWith('#') ? payload.substring(1) : payload;
+        return;
+      }
+
+      // 2. Query Parameter Injection Logic
       let k = [...u.searchParams.keys()];
       
-      if(k.length){
+      if (k.length) {
+        // If params exist, inject into the first one
         u.searchParams.set(k[0], payload);
-        location.href = u.toString();
+      } else {
+        // If NO params exist, create a default one (e.g., ?q=payload)
+        u.searchParams.set('q', payload);
       }
+      
+      location.href = u.toString();
     })();
   `);
-    copyText(p);
-  };
-
+  copyText(p);
+};
   /* ---------- SELECTION TRANSFORM ---------- */
   function transform(fn) {
     let s = payload.selectionStart, e = payload.selectionEnd;
@@ -240,6 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (i === 0) renderTypes(m);
   });
 });
+
 
 
 
