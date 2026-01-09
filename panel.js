@@ -72,34 +72,37 @@ injectBtn.onclick = () => {
   let p = payload.value.trim();
   if (!p) return;
 
-  try {
-    if (p.includes('%')) p = decodeURIComponent(p);
-  } catch (e) {}
-
   chrome.devtools.inspectedWindow.eval(`
     (function(){
       const payload = ${JSON.stringify(p)};
-      let u = new URL(location.href);
+      let currentUrl = location.href;
       
-      // 1. Fragment Injection (#) Logic
-      // If the URL already has a fragment, or you want to force fragment injection:
+      // 1. Fragment Injection Logic (Stays Literal)
       if (location.hash || payload.startsWith('#')) {
-        location.hash = payload.startsWith('#') ? payload.substring(1) : payload;
+        const base = currentUrl.split('#')[0];
+        const newHash = payload.startsWith('#') ? payload : '#' + payload;
+        location.href = base + newHash;
         return;
       }
 
-      // 2. Query Parameter Injection Logic
-      let k = [...u.searchParams.keys()];
+      // 2. Smart Query Parameter Injection
+      // We manually split the URL to avoid URLSearchParams auto-encoding
+      let [baseUrl, queryString] = currentUrl.split('?');
       
-      if (k.length) {
-        // If params exist, inject into the first one
-        u.searchParams.set(k[0], payload);
+      if (queryString) {
+        // Replace the first parameter value while keeping the key
+        // regex finds: key=value
+        let parts = queryString.split('&');
+        let firstParam = parts[0].split('=');
+        firstParam[1] = payload; // Inject raw payload here
+        parts[0] = firstParam.join('=');
+        queryString = parts.join('&');
       } else {
-        // If NO params exist, create a default one (e.g., ?q=payload)
-        u.searchParams.set('q', payload);
+        // No params exist, add the default one
+        queryString = "q=" + payload;
       }
       
-      location.href = u.toString();
+      location.href = baseUrl + "?" + queryString;
     })();
   `);
   copyText(p);
