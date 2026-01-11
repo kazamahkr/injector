@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modeBox = document.getElementById("modeBox");
   const typeBox = document.getElementById("typeBox");
   const payloadBox = document.getElementById("payloadBox");
+  const htmlcodebtn=document.getElementById("htmlcode")
 
   /*this is special feature hacked from vs code  */
   /* ---------- AUTO WRAP SELECTION ---------- */
@@ -128,6 +129,40 @@ injectBtn.onclick = () => {
     payload.selectionEnd = s + out.length;
     autoGrow(payload);
   }
+
+  /*-----------html encode toogle--------- */
+let htmlToggle = false;
+
+htmlcodebtn.onclick = () => transform(s => {
+
+  const encode = str =>
+    str
+      .replace(/&/g, "&#x26;")
+      .replace(/</g, "&#x3C;")
+      .replace(/>/g, "&#x3E;")
+      .replace(/"/g, "&#x22;")
+      .replace(/'/g, "&#x27;")
+      .replace(/\//g, "&#x2F;")
+      .replace(/=/g, "&#x3D;")
+      .replace(/`/g, "&#x60;");
+
+  const decode = str =>
+    str
+      .replace(/&#x60;/gi, "`")
+      .replace(/&#x3D;/gi, "=")
+      .replace(/&#x2F;/gi, "/")
+      .replace(/&#x27;/gi, "'")
+      .replace(/&#x22;/gi, '"')
+      .replace(/&#x3E;/gi, ">")
+      .replace(/&#x3C;/gi, "<")
+      .replace(/&#x26;/gi, "&");
+
+  htmlToggle = !htmlToggle;
+  return htmlToggle ? encode(s) : decode(s);
+
+});
+
+
 
   /* ---------- URL TOGGLE ---------- */
   urlCodeBtn.onclick = () => transform(s => {
