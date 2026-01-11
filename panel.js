@@ -75,123 +75,49 @@ injectBtn.onclick = () => {
   chrome.devtools.inspectedWindow.eval(`
     (function(){
       const payload = ${JSON.stringify(p)};
-      let currentUrl = location.href;
+      const currentUrl = window.location.href;
       
-      // 1. Fragment Injection Logic
-      if (location.hash || payload.startsWith('#')) {
-        const base = currentUrl.split('#')[0];
-        const newHash = payload.startsWith('#') ? payload : '#' + payload;
-        location.href = base + newHash;
+      // Split to find the base (before ? or #)
+      // This ensures we don't accidentally double-up on symbols
+      let baseUrl = currentUrl.split(/[?#]/)[0];
+      let queryString = "";
+      
+      // Check if URL currently has a query string
+      if (currentUrl.includes('?')) {
+        // Get everything between ? and #
+        queryString = currentUrl.split('?')[1].split('#')[0];
+      }
+
+      let finalUrl = "";
+
+      // 1. If user provided a full parameter (e.g., ?search=...)
+      if (payload.startsWith('?') || payload.startsWith('&')) {
+        finalUrl = baseUrl + "?" + payload.replace(/^[?&]/, '');
+      } 
+      // 2. If URL has a parameter, replace its value
+      else if (queryString && queryString.includes('=')) {
+        // Regex: Replace the value of the first parameter
+        const newQuery = queryString.replace(/^([^=]+=)[^&]*/, '$1' + payload);
+        finalUrl = baseUrl + "?" + newQuery;
+      } 
+      // 3. Fallback: If payload is just a fragment
+      else if (payload.startsWith('#')) {
+        finalUrl = baseUrl + (queryString ? "?" + queryString : "") + payload;
+      }
+      // 4. Error: No place to inject
+      else {
+        console.error("Injection Failed: No parameter found. Use '?param=value' in the text field.");
         return;
       }
 
-      // 2. Query Parameter Injection
-      let [baseUrl, queryString] = currentUrl.split('?');
-      
-      if (queryString) {
-        // If the URL has a query string, replace the first parameter's value
-        if (queryString.indexOf('=') !== -1) {
-          // Overwrites the existing value with the new payload
-          queryString = queryString.replace(/^([^=]+=)[^&]*/, '$1' + payload);
-        } else {
-          // If '?' exists but no '=', append the payload
-          queryString = queryString + "=" + payload;
-        }
-        location.href = baseUrl + "?" + queryString;
-      } else {
-        // FULL FIX: If no parameters exist in the URL
-        // Check if the user provided their own parameter (e.g., ?search=...)
-        if (payload.startsWith('?') || payload.startsWith('&')) {
-          // Remove leading ? or & if we are appending to base URL
-          const cleanPayload = payload.replace(/^[?&]/, '');
-          location.href = baseUrl + "?" + cleanPayload;
-        } else {
-          // If the user didn't provide a parameter name and the URL has none
-          console.error("Injection Failed: No parameter found in URL. Use '?param=value' in the text field to inject a new one.");
-        }
-      }
+      // Force navigation (simulates pressing Enter)
+      window.location.href = finalUrl;
     })();
   `);
   copyText(p);
 };
-//  injectBtn.onclick = () => {
-//   let p = payload.value.trim();
-//   if (!p) return;
+ 
 
-//   chrome.devtools.inspectedWindow.eval(`
-//     (function(){
-//       const payload = ${JSON.stringify(p)};
-//       let currentUrl = location.href;
-      
-//       // 1. Fragment Injection Logic
-//       if (location.hash || payload.startsWith('#')) {
-//         const base = currentUrl.split('#')[0];
-//         const newHash = payload.startsWith('#') ? payload : '#' + payload;
-//         location.href = base + newHash;
-//         return;
-//       }
-
-//       // 2. Smart Query Parameter Injection
-//       let [baseUrl, queryString] = currentUrl.split('?');
-      
-//       if (queryString) {
-//         // Fix: Targets the first parameter value specifically.
-//         // It captures the "key=" and replaces everything until the first "&"
-//         if (queryString.indexOf('=') !== -1) {
-//           queryString = queryString.replace(/^([^=]+=)[^&]*/, '$1' + payload);
-//         } else {
-//           // If query exists but has no value (e.g. ?debug), append it
-//           queryString = queryString + "=" + payload;
-//         }
-//       } else {
-//         // No params exist, add the default one
-//         queryString = "q=" + payload;
-//       }
-      
-//       location.href = baseUrl + "?" + queryString;
-//     })();
-//   `);
-//   copyText(p);
-// };
-// injectBtn.onclick = () => {
-//   let p = payload.value.trim();
-//   if (!p) return;
-
-//   chrome.devtools.inspectedWindow.eval(`
-//     (function(){
-//       const payload = ${JSON.stringify(p)};
-//       let currentUrl = location.href;
-      
-//       // 1. Fragment Injection Logic (Stays Literal)
-//       if (location.hash || payload.startsWith('#')) {
-//         const base = currentUrl.split('#')[0];
-//         const newHash = payload.startsWith('#') ? payload : '#' + payload;
-//         location.href = base + newHash;
-//         return;
-//       }
-
-//       // 2. Smart Query Parameter Injection
-//       // We manually split the URL to avoid URLSearchParams auto-encoding
-//       let [baseUrl, queryString] = currentUrl.split('?');
-      
-//       if (queryString) {
-//         // Replace the first parameter value while keeping the key
-//         // regex finds: key=value
-//         let parts = queryString.split('&');
-//         let firstParam = parts[0].split('=');
-//         firstParam[1] = payload; // Inject raw payload here
-//         parts[0] = firstParam.join('=');
-//         queryString = parts.join('&');
-//       } else {
-//         // No params exist, add the default one
-//         queryString = "q=" + payload;
-//       }
-      
-//       location.href = baseUrl + "?" + queryString;
-//     })();
-//   `);
-//   copyText(p);
-// };
   /* ---------- SELECTION TRANSFORM ---------- */
   function transform(fn) {
     let s = payload.selectionStart, e = payload.selectionEnd;
@@ -336,3 +262,8 @@ injectBtn.onclick = () => {
     if (i === 0) renderTypes(m);
   });
 });
+
+
+
+
+
