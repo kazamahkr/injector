@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modeBox = document.getElementById("modeBox");
   const typeBox = document.getElementById("typeBox");
   const payloadBox = document.getElementById("payloadBox");
-  const htmlcodebtn=document.getElementById("htmlcode")
+  const htmlcodebtn = document.getElementById("htmlcode")
 
   /*this is special feature hacked from vs code  */
   /* ---------- AUTO WRAP SELECTION ---------- */
@@ -50,9 +50,27 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ---------- AUTO GROW ---------- */
+  function updateHighlighting() {
+    const highlightLayer = document.getElementById("highlighting");
+    let text = payload.value;
+
+    // Basic regex for VS Code colors
+    text = text
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;") // Escape
+      .replace(/("(.*?)")/g, '<span class="token-string">$1</span>') // Double quotes
+      .replace(/('(.*?)')/g, '<span class="token-string">$1</span>') // Single quotes
+      .replace(/\b(alert|script|window|document|fetch|eval|UNION|SELECT|OR|FROM)\b/gi, '<span class="token-keyword">$1</span>') // Keywords
+      .replace(/(&lt;[^&]+&gt;)/g, '<span class="token-tag">$1</span>'); // Tags
+
+    highlightLayer.innerHTML = text + "\n"; // The newline keeps alignment perfect
+  }
+
+  // Inside your existing autoGrow function, add the update:
   function autoGrow(el) {
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
+    document.getElementById("highlighting").style.height = el.style.height; // Keep heights in sync
+    updateHighlighting();
   }
   payload.addEventListener("input", () => autoGrow(payload));
 
@@ -68,12 +86,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- INJECT ---------- */
   /* ---------- REFINED INJECT ---------- */
- /* ---------- REFINED INJECT ---------- */
-injectBtn.onclick = () => {
-  let p = payload.value.trim();
-  if (!p) return;
+  /* ---------- REFINED INJECT ---------- */
+  injectBtn.onclick = () => {
+    let p = payload.value.trim();
+    if (!p) return;
 
-  chrome.devtools.inspectedWindow.eval(`
+    chrome.devtools.inspectedWindow.eval(`
     (function(){
       const payload = ${JSON.stringify(p)};
       const currentUrl = window.location.href;
@@ -115,9 +133,9 @@ injectBtn.onclick = () => {
       window.location.href = finalUrl;
     })();
   `);
-  copyText(p);
-};
- 
+    copyText(p);
+  };
+
 
   /* ---------- SELECTION TRANSFORM ---------- */
   function transform(fn) {
@@ -131,36 +149,36 @@ injectBtn.onclick = () => {
   }
 
   /*-----------html encode toogle--------- */
-let htmlToggle = false;
+  let htmlToggle = false;
 
-htmlcodebtn.onclick = () => transform(s => {
+  htmlcodebtn.onclick = () => transform(s => {
 
-  const encode = str =>
-    str
-      .replace(/&/g, "&#x26;")
-      .replace(/</g, "&#x3C;")
-      .replace(/>/g, "&#x3E;")
-      .replace(/"/g, "&#x22;")
-      .replace(/'/g, "&#x27;")
-      .replace(/\//g, "&#x2F;")
-      .replace(/=/g, "&#x3D;")
-      .replace(/`/g, "&#x60;");
+    const encode = str =>
+      str
+        .replace(/&/g, "&#x26;")
+        .replace(/</g, "&#x3C;")
+        .replace(/>/g, "&#x3E;")
+        .replace(/"/g, "&#x22;")
+        .replace(/'/g, "&#x27;")
+        .replace(/\//g, "&#x2F;")
+        .replace(/=/g, "&#x3D;")
+        .replace(/`/g, "&#x60;");
 
-  const decode = str =>
-    str
-      .replace(/&#x60;/gi, "`")
-      .replace(/&#x3D;/gi, "=")
-      .replace(/&#x2F;/gi, "/")
-      .replace(/&#x27;/gi, "'")
-      .replace(/&#x22;/gi, '"')
-      .replace(/&#x3E;/gi, ">")
-      .replace(/&#x3C;/gi, "<")
-      .replace(/&#x26;/gi, "&");
+    const decode = str =>
+      str
+        .replace(/&#x60;/gi, "`")
+        .replace(/&#x3D;/gi, "=")
+        .replace(/&#x2F;/gi, "/")
+        .replace(/&#x27;/gi, "'")
+        .replace(/&#x22;/gi, '"')
+        .replace(/&#x3E;/gi, ">")
+        .replace(/&#x3C;/gi, "<")
+        .replace(/&#x26;/gi, "&");
 
-  htmlToggle = !htmlToggle;
-  return htmlToggle ? encode(s) : decode(s);
+    htmlToggle = !htmlToggle;
+    return htmlToggle ? encode(s) : decode(s);
 
-});
+  });
 
 
 
@@ -276,6 +294,7 @@ htmlcodebtn.onclick = () => transform(s => {
       d.onclick = () => {
         payload.value = p;
         autoGrow(payload);
+        updateHighlighting(); 
         copyText(p);
       };
       payloadBox.appendChild(d);
